@@ -1,0 +1,26 @@
+EJEMPLO DE CONFIGURACIÓN PARA ARCHIVO .env
+==========================================
+
+Crea un archivo llamado exactamente ".env" (sin extensión) en la misma carpeta donde está verf_con.py
+
+Contenido del archivo .env:
+--------------------------
+
+OPCIÓN 1 - Para SQL Server con autenticación de Windows:
+SQLSERVER_CONN=mssql+pyodbc://localhost/BASEDEDATOS?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes
+
+OPCIÓN 2 - Para SQL Server Express:
+SQLSERVER_CONN=mssql+pyodbc://localhost\SQLEXPRESS/ferreteria_db?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes
+
+OPCIÓN 3 - Para SQL Server con usuario y contraseña:
+SQLSERVER_CONN=mssql+pyodbc://tu_usuario:tu_contraseña@localhost/BASEDEDATOS?driver=ODBC+Driver+17+for+SQL+Server
+
+OPCIÓN 4 - Para ODBC Driver 18 (más nuevo):
+SQLSERVER_CONN=mssql+pyodbc://localhost/ASEDEDATOS?driver=ODBC+Driver+18+for+SQL+Server&trusted_connection=yes&TrustServerCertificate=yes
+
+INSTRUCCIONES:
+1. Crea el archivo .env con una de las opciones de arriba
+2. Reemplaza "localhost" con la IP de tu servidor si no está en la misma máquina
+3. Reemplaza "tu_usuario" y "tu_contraseña" con tus credenciales reales si usas la opción 3
+4. Asegúrate de que la base de datos "ASEDEDATOS" exista en tu servidor
+5. Verifica que tengas instalado el ODBC Driver para SQL Server 
