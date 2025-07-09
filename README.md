@@ -2,7 +2,7 @@
 
 ## 📋 Descripción General
 
-Esta es una **API REST** (Interfaz de Programación de Aplicaciones) desarrollada con **FastAPI** y **Python** para gestionar una ferretería. La API permite manejar productos, clientes, ventas, inventario, proveedores y mucho más.
+Esta es una **API REST** (Interfaz de Programación de Aplicaciones) desarrollada con **FastAPI** y **Python** para gestionar una ferretería. La API permite manejar productos, clientes, ventas, inventario, proveedores y mucho más.(En continuo desarrollo y funcionalidad)
 
 ### ¿Qué es una API?
 Una API es como un "mesero" que conecta diferentes programas. En este caso, nuestra API permite que aplicaciones web, móviles o de escritorio puedan interactuar con la base de datos de la ferretería de manera segura y organizada.
