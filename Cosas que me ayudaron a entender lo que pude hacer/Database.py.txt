@@ -1,0 +1,125 @@
+   ¿Qué hace database.py?
+El archivo database.py es el "puente" entre tu aplicación Python y tu base de datos SQL Server. Es como el "conductor" que maneja todas las conexiones.
+   Análisis detallado de database.py
+Vamos a analizar tu archivo database.py línea por línea:
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
+
+Desglose de importaciones:
+Línea 1: from sqlalchemy import create_engine
+create_engine: Función que crea el "motor" de la base de datos.
+¿Qué hace? Es como encender el motor de un carro - establece la conexión con la base de datos.
+Línea 2: from sqlalchemy.ext.declarative import declarative_base
+declarative_base: Clase base para crear modelos de base de datos.
+¿Qué hace? Permite crear las "plantillas" de tus tablas (como en models.py).
+Línea 3: from sqlalchemy.orm import sessionmaker
+sessionmaker: Función que crea "sesiones" para interactuar con la base de datos.
+¿Qué hace? Es como abrir una "conversación" con la base de datos.
+Línea 4: import os
+os: Módulo para interactuar con el sistema operativo.
+¿Qué hace? Permite leer variables de entorno (configuración).
+Línea 5: from dotenv import load_dotenv
+load_dotenv: Función que carga variables desde un archivo .env.
+¿Qué hace? Lee tu configuración de base de datos desde el archivo .env.
+
+🔧 Configuración de la base de datos
+
+# Cargar variables de entorno desde el archivo .env
+load_dotenv()
+
+# Obtener la cadena de conexión desde las variables de entorno
+DATABASE_URL = os.getenv("SQLSERVER_CONN")
+
+Desglose línea por línea:
+Línea 1: load_dotenv()
+¿Qué hace? Lee el archivo .env y carga las variables de entorno.
+Ejemplo: Si tu .env tiene SQLSERVER_CONN=mssql+pyodbc://..., esta función la hace disponible.
+Línea 2: DATABASE_URL = os.getenv("SQLSERVER_CONN")
+os.getenv(): Obtiene el valor de una variable de entorno.
+"SQLSERVER_CONN": Nombre de la variable que contiene la cadena de conexión.
+DATABASE_URL: Variable que almacena la configuración de conexión.
+
+   Creación del motor de la base de datos
+
+# Crear el motor de la base de datos
+# Este es como el "conductor" que maneja la conexión
+engine = create_engine(DATABASE_URL)
+
+Desglose línea por línea:
+Línea 1: engine = create_engine(DATABASE_URL)
+create_engine(): Crea el motor de la base de datos.
+DATABASE_URL: La configuración de conexión que obtuvimos antes.
+engine: Variable que contiene el motor de la base de datos.
+¿Qué hace el motor?
+Establece la conexión con SQL Server
+Maneja el pool de conexiones
+Traduce las consultas de Python a SQL
+
+🔄 Creación de sesiones
+
+# Crear una sesión local para interactuar con la base de datos
+# Es como abrir una "conversación" con la base de datos
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Desglose línea por línea:
+Línea 1: SessionLocal = sessionmaker(...)
+sessionmaker(): Crea una "fábrica" de sesiones.
+SessionLocal: Variable que contiene la fábrica de sesiones.
+Parámetros de sessionmaker:
+autocommit=False: No guarda automáticamente los cambios (tú decides cuándo).
+autoflush=False: No envía automáticamente las consultas a la base de datos.
+bind=engine: Conecta las sesiones con el motor que creamos.
+
+📋 Creación de la base para modelos
+
+# Crear la base para los modelos
+# Esto nos permite crear "plantillas" para nuestras tablas
+Base = declarative_base()
+
+Desglose línea por línea:
+Línea 1: Base = declarative_base()
+declarative_base(): Crea la clase base para todos los modelos.
+Base: Variable que contiene la clase base.
+¿Para qué sirve?
+Todas las clases en models.py heredan de Base
+Permite que SQLAlchemy "entienda" tus modelos
+Facilita la creación de tablas
+
+🔧 Función para obtener sesiones
+
+# Función para obtener la sesión de la base de datos
+def get_db():
+    """
+    Esta función crea una nueva sesión de base de datos
+    y la cierra automáticamente cuando termina
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+Desglose línea por línea:
+Línea 1: def get_db():
+def: Define una nueva función.
+get_db: Nombre de la función (obtener base de datos).
+Línea 2-4: Docstring
+Documentación: Explica qué hace la función.
+Línea 5: db = SessionLocal()
+SessionLocal(): Crea una nueva sesión usando la fábrica.
+db: Variable que contiene la sesión activa.
+Línea 6: try:
+try: Inicia un bloque de manejo de errores.
+Línea 7: yield db
+yield: Devuelve la sesión y "pausa" la función.
+¿Por qué yield? Permite que FastAPI use la sesión y luego la cierre automáticamente.
+Línea 8: finally:
+finally: Bloque que SIEMPRE se ejecuta, aunque haya errores.
+Línea 9: db.close()
+db.close(): Cierra la sesión de la base de datos.
+¿Por qué es importante? Libera recursos y evita fugas de memoria.
+

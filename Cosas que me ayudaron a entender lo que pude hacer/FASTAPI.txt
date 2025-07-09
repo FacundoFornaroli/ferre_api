@@ -1,0 +1,181 @@
+🏗️ FUNDAMENTOS DE LA ARQUITECTURA
+1. ¿QUÉ ES FASTAPI Y POR QUÉ LO USAMOS?
+FastAPI es un framework moderno de Python para crear APIs web. Es como un "constructor" que nos permite crear servicios web de forma rápida y eficiente.
+¿Por qué FastAPI?
+⚡ Muy rápido - comparable a NodeJS y Go
+   Validación automática de datos
+📚 Documentación automática (Swagger/OpenAPI)
+🛡️ Seguro por defecto
+   Python moderno con type hints
+¿Cuándo usarlo?
+Cuando necesitas crear una API REST
+Para conectar frontend con backend
+Cuando quieres documentación automática
+Para microservicios
+2. ¿QUÉ SON LOS MODELOS (models.py)?
+Los modelos son como "plantillas" que representan las tablas de tu base de datos en código Python.
+class Categorias(Base):
+    __tablename__ = "Categorias"
+    ID_Categoria = Column(Integer, primary_key=True, index=True)
+    Nombre = Column(String(100), nullable=False)
+
+¿Por qué los necesitamos?
+🗄️ Mapeo objeto-relacional (ORM)
+🔒 Validación de datos automática
+🔍 Consultas más seguras que SQL directo
+🛠️ Mantenimiento más fácil
+¿Cuándo usarlos?
+Siempre que trabajes con bases de datos
+Para evitar errores de SQL
+Para hacer consultas más legibles
+3. ¿QUÉ SON LOS SCHEMAS (schemas.py)?
+Los schemas son como "contratos" que definen qué datos se pueden enviar y recibir en la API.
+
+class CategoriaCreate(CategoriaBase):
+    pass
+
+class Categorias(CategoriaBase):
+    ID_Categoria: int
+    class Config:
+        from_attributes = True
+
+
+¿Por qué los necesitamos?
+✅ Validación automática de datos
+📝 Documentación automática en Swagger
+🔒 Seguridad - solo los campos definidos se procesan
+   Claridad - sabes exactamente qué datos esperar
+¿Cuándo usarlos?
+Para todas las rutas de la API
+Para validar datos de entrada
+Para definir respuestas de la API
+   PATRÓN CRUD - EL FUNDAMENTO DE LAS RUTAS
+¿QUÉ ES CRUD?
+CRUD significa Create, Read, Update, Delete (Crear, Leer, Actualizar, Eliminar). Es el patrón básico para manejar datos.
+
+# CREATE - Crear
+@app.post("/categorias/")
+def crear_categoria(categoria: schemas.CategoriaCreate, db: Session = Depends(get_db)):
+    db_categoria = models.Categorias(**categoria.dict())
+    db.add(db_categoria)
+    db.commit()
+    return db_categoria
+
+# READ - Leer
+@app.get("/categorias/")
+def obtener_categorias(db: Session = Depends(get_db)):
+    return db.query(models.Categorias).all()
+
+# UPDATE - Actualizar
+@app.put("/categorias/{categoria_id}")
+def actualizar_categoria(categoria_id: int, categoria: schemas.CategoriaUpdate, db: Session = Depends(get_db)):
+    # Lógica de actualización
+
+# DELETE - Eliminar
+@app.delete("/categorias/{categoria_id}")
+def eliminar_categoria(categoria_id: int, db: Session = Depends(get_db)):
+    # Lógica de eliminación
+
+¿Por qué este patrón?
+🎯 Estandarización - todos saben qué esperar
+   Consistencia - mismo patrón para todas las tablas
+   Documentación clara - fácil de entender
+  ️ Mantenimiento - fácil de mantener
+🔧 COMPONENTES CLAVE EXPLICADOS
+1. DEPENDENCIAS (Depends)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/categorias/")
+def obtener_categorias(db: Session = Depends(get_db)):
+    # db se inyecta automáticamente
+
+¿Por qué?
+🔄 Inyección de dependencias automática
+🧹 Limpieza automática de recursos
+🔒 Seguridad - cada request tiene su propia sesión
+🎯 Reutilización - no repetir código
+2. MANEJO DE ERRORES
+
+@app.get("/categorias/{categoria_id}")
+def obtener_categoria(categoria_id: int, db: Session = Depends(get_db)):
+    categoria = db.query(models.Categorias).filter(models.Categorias.ID_Categoria == categoria_id).first()
+    if not categoria:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    return categoría
+
+Por qué?
+🚨 Respuestas consistentes de error
+📱 Frontend puede manejar errores apropiadamente
+🔍 Debugging más fácil
+👥 Experiencia de usuario mejor
+3. VALIDACIÓN AUTOMÁTICA
+
+class ProductosCreate(ProductosBase):
+    @validator('Precio')
+    def validar_precio(cls, v):
+        if v < 0:
+            raise ValueError('El precio debe ser mayor o igual a 0')
+        return v
+
+Por qué?
+  ️ Datos seguros - no se guardan datos inválidos
+🎯 Reglas de negocio aplicadas automáticamente
+   Documentación clara de validaciones
+🚨 Errores tempranos - se detectan antes de llegar a la BD
+   FLUJO DE UNA PETICIÓN HTTP
+¿Cómo funciona todo junto?
+Cliente hace petición → GET /categorias/
+FastAPI recibe la petición → Busca la función correspondiente
+Inyección de dependencias → get_db() se ejecuta automáticamente
+Validación de parámetros → FastAPI valida automáticamente
+Ejecución de la función → Tu código se ejecuta
+Consulta a la base de datos → SQLAlchemy ejecuta la consulta
+Validación de respuesta → Pydantic valida los datos de salida
+Respuesta al cliente → JSON con los datos
+
+# 1. Cliente pide: GET /categorias/
+# 2. FastAPI encuentra esta función:
+@app.get("/categorias/", response_model=List[schemas.Categorias])
+def obtener_categorias(db: Session = Depends(get_db)):
+    # 3. get_db() se ejecuta automáticamente
+    # 4. Se valida que db sea una sesión válida
+    categorias = db.query(models.Categorias).all()
+    # 5. Se ejecuta la consulta SQL
+    # 6. Se valida que el resultado sea List[Categorias]
+    return categorias
+    # 7. Se devuelve JSON al cliente
+
+   CUÁNDO USAR CADA TIPO DE RUTA
+GET - Para leer datos
+@app.get("/categorias/")  # Listar todos
+@app.get("/categorias/{id}")  # Obtener uno específico
+@app.get("/categorias/buscar/{nombre}")  # Búsquedas
+
+POST - Para crear datos
+@app.post("/categorias/")  # Crear nuevo registro
+
+PUT - Para actualizar datos
+@app.put("/categorias/{id}")  # Actualizar registro existente
+
+DELETE - Para eliminar datos
+@app.delete("/categorias/{id}")  # Eliminar registro
+
+🔍 RUTAS ADICIONALES - ¿POR QUÉ LAS NECESITAMOS?
+
+# Ruta adicional para obtener inventario por producto
+@app.get("/inventario/producto/{producto_id}")
+def obtener_inventario_por_producto(producto_id: int, db: Session = Depends(get_db)):
+    inventario = db.query(models.Inventario).filter(models.Inventario.ID_Producto == producto_id).all()
+    return inventario
+
+¿Por qué rutas adicionales?
+🎯 Casos de uso específicos del negocio
+📊 Reportes y consultas especializadas
+🔍 Búsquedas avanzadas
+📱 Optimización para el frontend

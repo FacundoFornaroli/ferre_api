@@ -1,0 +1,119 @@
+🔍 ¿Qué son los Schemas?
+Los schemas son como "plantillas" que definen la estructura de los datos. Son como los formularios que llenas en el banco o en cualquier aplicación.
+📝 Estructura básica de un Schema
+1. Importaciones necesarias
+from pydantic import BaseModel, validator
+from typing import Optional, List
+from datetime import datetime
+
+¿Qué hace cada importación?
+BaseModel: Es la clase base de Pydantic. Todos los schemas deben heredar de aquí.
+validator: Permite crear funciones de validación personalizadas.
+Optional: Permite que un campo sea opcional (no obligatorio).
+List: Permite crear listas de datos.
+datetime: Para manejar fechas y horas.
+   Análisis detallado de un Schema completo
+Vamos a analizar el schema de Productos línea por línea:
+
+class ProductosBase(BaseModel):
+    """Esquema base para productos"""
+    Nombre: str
+    Descripcion: str
+    Precio: float
+    Costo: float
+    ID_Categoria: int
+    ID_Unidad_de_medida: int
+
+Desglose línea por línea:
+Línea 1: class ProductosBase(BaseModel):
+class: Define una nueva clase en Python.
+ProductosBase: Nombre de la clase (convención: PascalCase).
+(BaseModel):: Hereda de BaseModel (permite validación automática).
+Línea 2: """Esquema base para productos"""
+Docstring: Documentación de la clase (aparece en la documentación automática).
+Líneas 3-8: Campos del schema
+Nombre: str: Campo llamado "Nombre" que debe ser texto (string).
+Descripcion: str: Campo llamado "Descripción" que debe ser texto.
+Precio: float: Campo llamado "Precio" que debe ser número decimal.
+Costo: float: Campo llamado "Costo" que debe ser número decimal.
+ID_Categoria: int: Campo llamado "ID_Categoria" que debe ser número entero.
+ID_Unidad_de_medida: int: Campo llamado "ID_Unidad_de_medida" que debe ser número entero.
+🔍 Schema para Crear con Validaciones
+
+class ProductosCreate(ProductosBase):
+    """Esquema para crear un nuevo producto"""
+    @validator('Precio')
+    def validar_precio(cls, v):
+        if v < 0:
+            raise ValueError('El precio debe ser mayor o igual a 0')
+        return v
+    
+    @validator('Costo')
+    def validar_costo(cls, v):
+        if v < 0:
+            raise ValueError('El costo debe ser mayor o igual a 0')
+        return v
+
+Desglose línea por línea:
+Línea 1: class ProductosCreate(ProductosBase):
+ProductosCreate: Nombre de la clase para crear productos.
+(ProductosBase):: Hereda todos los campos de ProductosBase.
+Línea 2: """Esquema para crear un nuevo producto"""
+Documentación específica para este schema.
+Línea 3: @validator('Precio')
+@validator: Decorador que indica que es una función de validación.
+('Precio'): Especifica qué campo va a validar.
+Línea 4: def validar_precio(cls, v):
+def: Define una nueva función.
+validar_precio: Nombre de la función.
+cls: Referencia a la clase (requerido por Pydantic).
+v: Valor del campo que se está validando.
+Línea 5: if v < 0:
+Condición: Si el valor es menor que 0.
+Línea 6: raise ValueError('El precio debe ser mayor o igual a 0')
+raise: Lanza una excepción (error).
+ValueError: Tipo de error específico.
+Mensaje: Explica qué está mal.
+Línea 7: return v
+return: Devuelve el valor si es válido.
+   Schema para Actualizar
+
+class ProductosUpdate(BaseModel):
+    """Esquema para actualizar un producto"""
+    Nombre: Optional[str] = None
+    Descripcion: Optional[str] = None
+    Precio: Optional[float] = None
+    Costo: Optional[float] = None
+    ID_Categoria: Optional[int] = None
+    ID_Unidad_de_medida: Optional[int] = None
+
+Desglose línea por línea:
+Línea 1: class ProductosUpdate(BaseModel):
+ProductosUpdate: Nombre de la clase para actualizar productos.
+(BaseModel):: Hereda directamente de BaseModel (no de ProductosBase).
+Líneas 2-7: Campos opcionales
+Optional[str]: El campo puede ser texto O None (nulo).
+= None: Valor por defecto si no se envía el campo.
+¿Por qué todos opcionales?
+Para permitir actualizar solo algunos campos.
+Si quieres cambiar solo el precio, no necesitas enviar todos los demás campos.
+🔍 Schema para Mostrar (Response)
+
+class Productos(ProductosBase):
+    """Esquema para mostrar un producto"""
+    ID_Producto: int
+    
+    class Config:
+        from_attributes = True
+
+Desglose línea por línea:
+Línea 1: class Productos(ProductosBase):
+Productos: Nombre de la clase para mostrar productos.
+(ProductosBase):: Hereda todos los campos de ProductosBase.
+Línea 2: ID_Producto: int
+Campo adicional: Incluye el ID generado por la base de datos.
+Línea 3: class Config:
+Clase de configuración: Define configuraciones especiales para Pydantic.
+Línea 4: from_attributes = True
+Configuración: Permite que Pydantic convierta objetos de SQLAlchemy automáticamente.
+

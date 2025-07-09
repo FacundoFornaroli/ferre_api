@@ -1,0 +1,79 @@
+El archivo models.py define las "plantillas" de tus tablas de base de datos. Es como el "mapa" que le dice a SQLAlchemy cómo están estructuradas tus tablas en SQL Server(en este caso).
+
+Análisis detallado de models.py
+Vamos a analizar tu archivo models.py línea por línea:
+
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Boolean, CheckConstraint
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+from database import Base
+
+Desglose de importaciones:
+Línea 1: from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Boolean, CheckConstraint
+Column: Define una columna en la tabla.
+Integer: Tipo de dato para números enteros.
+String: Tipo de dato para texto con longitud limitada.
+Float: Tipo de dato para números decimales.
+DateTime: Tipo de dato para fechas y horas.
+ForeignKey: Define una relación con otra tabla.
+Text: Tipo de dato para texto largo.
+Boolean: Tipo de dato para verdadero/falso.
+CheckConstraint: Define restricciones de validación.
+Línea 2: from sqlalchemy.orm import relationship
+relationship: Define relaciones entre tablas (no se guarda en la base de datos).
+Línea 3: from sqlalchemy.sql import func
+func: Funciones de SQL (como NOW(), COUNT(), etc.).
+Línea 4: from database import Base
+Base: Clase base que creamos en database.py.
+
+🔧 Análisis de una tabla completa
+Vamos a analizar tu tabla Categorias línea por línea:
+
+class Categorias(Base):
+    __tablename__ = "Categorias" # Este es el nombre exacto de la tabla en SQLSERVER de la base de datos
+    ID_Categoria = Column(Integer, primary_key=True, autoincrement=True) # IDENTIDAD (1,1) esto es una PK en mi Base de datos, que se autoincrementa
+    Nombre = Column(String(100), nullable=False, unique=True) # en SQL SERVER esta columna es VARCHAR(100) y es unica osea not null
+
+
+Desglose línea por línea:
+Línea 1: class Categorias(Base):
+class: Define una nueva clase en Python.
+Categorias: Nombre de la clase (convención: PascalCase).
+(Base):: Hereda de Base (permite que SQLAlchemy reconozca la tabla).
+Línea 2: __tablename__ = "Categorias"
+__tablename__: Variable especial que define el nombre de la tabla en la base de datos.
+"Categorias": Nombre exacto de la tabla en SQL Server.
+Línea 3: ID_Categoria = Column(Integer, primary_key=True, autoincrement=True)
+ID_Categoria: Nombre de la columna en Python.
+Column(): Define una columna en la tabla.
+Integer: Tipo de dato (número entero).
+primary_key=True: Define esta columna como clave primaria.
+autoincrement=True: Hace que el valor se incremente automáticamente (IDENTITY en SQL Server).
+Línea 4: Nombre = Column(String(100), nullable=False, unique=True)
+Nombre: Nombre de la columna en Python.
+String(100): Tipo de dato (texto con máximo 100 caracteres).
+nullable=False: La columna NO puede estar vacía (NOT NULL en SQL).
+unique=True: El valor debe ser único (UNIQUE en SQL).
+
+🔗 Análisis de relaciones (Foreign Keys)
+Vamos a analizar tu tabla Productos que tiene relaciones:
+
+class Productos(Base):
+    __tablename__ = "Productos"
+    ID_Producto = Column(Integer, primary_key=True, autoincrement=True)
+    Nombre = Column(String(150), nullable=False, unique=True)
+    Descripcion = Column(Text, nullable=False)
+    Precio = Column(Float, nullable=False)
+    Costo = Column(Float, nullable=False)
+    ID_Categoria = Column(Integer, ForeignKey("Categorias.ID_Categoria"), nullable=False)
+    ID_Unidad_de_medida = Column(Integer, ForeignKey("Unidades_de_medida.ID_Unidad_de_medida"), nullable=False)
+
+Desglose de las relaciones:
+Línea 6: ID_Categoria = Column(Integer, ForeignKey("Categorias.ID_Categoria"), nullable=False)
+Integer: Tipo de dato (número entero).
+ForeignKey("Categorias.ID_Categoria"): Define una relación con la tabla Categorias.
+"Categorias.ID_Categoria": Especifica la tabla y columna de referencia.
+nullable=False: La relación es obligatoria.
+Línea 7: ID_Unidad_de_medida = Column(Integer, ForeignKey("Unidades_de_medida.ID_Unidad_de_medida"), nullable=False)
+Similar a la anterior: Relación con la tabla Unidades_de_medida.
+

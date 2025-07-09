@@ -1,0 +1,21 @@
+🔍 ¿Qué es _pycache_?
+¿Qué hace?
+__pycache__ es una carpeta que Python crea automáticamente para almacenar archivos compilados (bytecode) de tus archivos .py.
+¿Por qué existe?
+Rendimiento: Python compila tu código a bytecode para ejecutarlo más rápido.
+Caché: Guarda la versión compilada para no tener que recompilar cada vez.
+Estructura típica:
+__pycache__/
+├── main.cpython-39.pyc
+├── models.cpython-39.pyc
+├── schemas.cpython-39.pyc
+└── database.cpython-39.pyc
+
+Desglose de nombres:
+main.cpython-39.pyc: Versión compilada de main.py
+cpython-39: Indica que fue compilado con Python 3.9
+.pyc: Extensión de archivos compilados de Python
+¿Cuándo se crea?
+Cuando ejecutas tu aplicación por primera vez
+Cuando modificas un archivo .py
+Cuando Python detecta que el archivo .py es más nuevo que el .pyc
